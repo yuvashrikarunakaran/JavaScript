@@ -15,20 +15,26 @@
  * and the case of the characters doesn't matter
  */
 const alphaNumericPalindrome = (str) => {
+  // Graceful check for invalid input (non-string)
   if (typeof str !== 'string') {
-    throw new TypeError('Argument should be string')
+    return false;
   }
 
-  // removing all the special characters and turning everything to lowercase
-  const newStr = str.replace(/[^a-z0-9]+/gi, '').toLowerCase()
-  const midIndex = newStr.length >> 1 // x >> y = floor(x / 2^y)
+  // Removing non-alphanumeric characters and converting to lowercase
+  const newStr = str.replace(/[^a-z0-9]/gi, '').toLowerCase();
 
-  for (let i = 0; i < midIndex; i++) {
-    if (newStr.at(i) !== newStr.at(~i)) {
-      // ~n = -(n + 1)
-      return false
-    }
+  // Early return for empty string (after filtering)
+  if (newStr === '') {
+    return true;
   }
+
+  const midIndex = Math.floor(newStr.length / 2);
+
+  // Check palindrome by comparing characters from both ends
+  return [...newStr].every((char, i) => i >= midIndex || char === newStr[newStr.length - 1 - i]);
+};
+
+export default alphaNumericPalindrome;
 
   return true
 }
