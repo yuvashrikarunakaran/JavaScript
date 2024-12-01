@@ -8,40 +8,27 @@
  * @param {String} str2 second input string
  * @returns `String` return one alternative arrange string.
  */
-const AlternativeStringArrange = (str1, str2) => {
-  // firstly, check that both inputs are strings.
-  if (typeof str1 !== 'string' || typeof str2 !== 'string') {
-    return 'Not string(s)'
+const alternativeStringArrange = (str1, str2) => {
+  // Ensure inputs are converted to strings, even if not initially.
+  str1 = String(str1 || '');
+  str2 = String(str2 || '');
+
+  // Initialize the output string.
+  let outStr = '';
+
+  // Calculate the maximum length of the two strings.
+  const maxLength = Math.max(str1.length, str2.length);
+
+  // Iterate through each character position up to the maximum length.
+  for (let i = 0; i < maxLength; i++) {
+    // Append character from the first string if within bounds.
+    if (i < str1.length) outStr += str1[i];
+    // Append character from the second string if within bounds.
+    if (i < str2.length) outStr += str2[i];
   }
 
-  // output string value.
-  let outStr = ''
+  // Return the combined string.
+  return outStr;
+};
 
-  // get first string length.
-  const firstStringLength = str1.length
-  // get second string length.
-  const secondStringLength = str2.length
-  // absolute length for operation.
-  const absLength =
-    firstStringLength > secondStringLength
-      ? firstStringLength
-      : secondStringLength
-
-  // Iterate the character count until the absolute count is reached.
-  for (let charCount = 0; charCount < absLength; charCount++) {
-    // If firstStringLength is lesser than the charCount it means they are able to re-arrange.
-    if (charCount < firstStringLength) {
-      outStr += str1[charCount]
-    }
-
-    // If secondStringLength is lesser than the charCount it means they are able to re-arrange.
-    if (charCount < secondStringLength) {
-      outStr += str2[charCount]
-    }
-  }
-
-  // return the output string.
-  return outStr
-}
-
-export { AlternativeStringArrange }
+export { alternativeStringArrange };
