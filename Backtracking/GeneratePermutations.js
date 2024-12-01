@@ -8,29 +8,32 @@
  * - https://www.britannica.com/science/permutation
  *
  */
-
 const swap = (arr, i, j) => {
-  const newArray = [...arr]
-
-  ;[newArray[i], newArray[j]] = [newArray[j], newArray[i]] // Swapping elements ES6 way
-
-  return newArray
-}
+  // Swap elements in the array
+  [arr[i], arr[j]] = [arr[j], arr[i]];
+};
 
 const permutations = (arr) => {
-  const P = []
+  const P = []; // Array to store all permutations
+
   const permute = (arr, low, high) => {
     if (low === high) {
-      P.push([...arr])
-      return P
+      P.push([...arr]); // Add a copy of the array to results
+      return;
     }
-    for (let i = low; i <= high; i++) {
-      arr = swap(arr, low, i)
-      permute(arr, low + 1, high)
-    }
-    return P
-  }
-  return permute(arr, 0, arr.length - 1)
-}
 
-export { permutations }
+    for (let i = low; i <= high; i++) {
+      swap(arr, low, i); // Swap to create a new permutation
+      permute(arr, low + 1, high); // Recurse to permute the rest
+      swap(arr, low, i); // Backtrack to restore original array
+    }
+  };
+
+  permute(arr, 0, arr.length - 1); // Start recursion
+  return P.sort((a, b) => a.join('').localeCompare(b.join(''))); // Ensure permutations are in sorted order
+};
+
+export { permutations };
+
+
+    
