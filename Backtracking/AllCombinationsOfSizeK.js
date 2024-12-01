@@ -1,28 +1,24 @@
 function generateCombinations(n, k) {
-  let currentCombination = []
-  let allCombinations = [] // will be used for storing all combinations
-  let currentValue = 1
+  const allCombinations = []; // Store all combinations
+  const currentCombination = []; // Current combination being built
 
-  function findCombinations() {
+  function findCombinations(start) {
+    // Base case: if the combination is of size k, add it to the result
     if (currentCombination.length === k) {
-      // Add the array of size k to the allCombinations array
-      allCombinations.push([...currentCombination])
-      return
+      allCombinations.push([...currentCombination]);
+      return;
     }
-    if (currentValue > n) {
-      // Check for exceeding the range
-      return
+
+    // Iterate from the current starting point up to n
+    for (let i = start; i <= n; i++) {
+      currentCombination.push(i); // Include current element
+      findCombinations(i + 1); // Recursive call with the next starting element
+      currentCombination.pop(); // Backtrack to explore other possibilities
     }
-    currentCombination.push(currentValue++)
-    findCombinations()
-    currentCombination.pop()
-    findCombinations()
-    currentValue--
   }
 
-  findCombinations()
-
-  return allCombinations
+  findCombinations(1); // Start from 1
+  return allCombinations;
 }
 
-export { generateCombinations }
+export { generateCombinations };
