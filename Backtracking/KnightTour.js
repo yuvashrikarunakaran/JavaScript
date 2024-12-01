@@ -1,72 +1,87 @@
 // Wikipedia: https://en.wikipedia.org/wiki/Knight%27s_tour
-
 class OpenKnightTour {
   constructor(size) {
-    // Constructor to initialize the chessboard and size
-    this.board = new Array(size).fill(0).map(() => new Array(size).fill(0))
-    this.size = size
+    // Initialize the chessboard and its size
+    this.size = size;
+    this.board = Array.from({ length: size }, () => Array(size).fill(0));
   }
 
-  getMoves([i, j]) {
-    // Helper function to get the valid moves of the knight from the current position
-    const moves = [
-      [i + 2, j - 1],
-      [i + 2, j + 1],
-      [i - 2, j - 1],
-      [i - 2, j + 1],
-      [i + 1, j - 2],
-      [i + 1, j + 2],
-      [i - 1, j - 2],
-      [i - 1, j + 2]
-    ]
+  getValidMoves([row, col]) {
+    // Calculate all possible knight moves from the current position
+    const potentialMoves = [
+      [row + 2, col - 1],
+      [row + 2, col + 1],
+      [row - 2, col - 1],
+      [row - 2, col + 1],
+      [row + 1, col - 2],
+      [row + 1, col + 2],
+      [row - 1, col - 2],
+      [row - 1, col + 2],
+    ];
 
-    // Filter out moves that are within the board boundaries
-    return moves.filter(
-      ([y, x]) => y >= 0 && y < this.size && x >= 0 && x < this.size
-    )
+    // Filter moves to keep only those within board boundaries
+    return potentialMoves.filter(
+      ([newRow, newCol]) =>
+        newRow >= 0 && newRow < this.size && newCol >= 0 && newCol < this.size
+    );
   }
 
-  isComplete() {
-    // Helper function to check if the board is complete
-    return !this.board.map((row) => row.includes(0)).includes(true)
+  isBoardComplete() {
+    // Check if all cells on the board have been visited
+    return this.board.every((row) => row.every((cell) => cell !== 0));
   }
 
   solve() {
-    // Function to find the solution for the given board
-    for (let i = 0; i < this.size; i++) {
-      for (let j = 0; j < this.size; j++) {
-        if (this.solveHelper([i, j], 0)) return true
+    // Attempt to solve the knight's tour for all starting positions
+    for (let row = 0; row < this.size; row++) {
+      for (let col = 0; col < this.size; col++) {
+        // Reset the board for a new attempt
+        this.board = Array.from({ length: this.size }, () =>
+          Array(this.size).fill(0)
+        );
+
+        // Start the tour from the current position
+        this.board[row][col] = 1; // Mark the starting position
+        if (this.solveFrom([row, col], 1)) return true;
       }
     }
-    return false
+    return false;
   }
 
-  solveHelper([i, j], curr) {
-    // Helper function for the main computation
-    if (this.isComplete()) return true
+  solveFrom([row, col], moveNumber) {
+    // Base case: If the board is complete, the solution is found
+    if (this.isBoardComplete()) return true;
 
-    // Iterate through possible moves and attempt to fill the board
-    for (const [y, x] of this.getMoves([i, j])) {
-      if (this.board[y][x] === 0) {
-        this.board[y][x] = curr + 1
-        if (this.solveHelper([y, x], curr + 1)) return true
-        // Backtracking: If the solution is not found, reset the cell to 0
-        this.board[y][x] = 0
+    // Explore all valid moves
+    for (const [nextRow, nextCol] of this.getValidMoves([row, col])) {
+      if (this.board[nextRow][nextCol] === 0) {
+        // Make a move and mark the cell
+        this.board[nextRow][nextCol] = moveNumber + 1;
+
+        // Recursively attempt to solve from the new position
+        if (this.solveFrom([nextRow, nextCol], moveNumber + 1)) return true;
+
+        // Backtrack: Reset the cell if no solution is found
+        this.board[nextRow][nextCol] = 0;
       }
     }
-    return false
+
+    // Return false if no moves lead to a solution
+    return false;
   }
 
-  printBoard(output = (value) => console.log(value)) {
-    // Utility function to display the board
+  printBoard(output = console.log) {
+    // Print the chessboard in a readable format
     for (const row of this.board) {
-      let string = ''
-      for (const elem of row) {
-        string += elem + '\t'
-      }
-      output(string)
+      output(row.map((cell) => (cell ? cell.toString().padStart(2, ' ') : ' .')).join(' '));
     }
   }
 }
 
-export { OpenKnightTour }
+export { OpenKnightTour };
+
+
+     
+    
+        
+       
