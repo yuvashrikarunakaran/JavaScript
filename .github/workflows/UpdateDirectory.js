@@ -1,71 +1,89 @@
-import path from 'path'
-import fs from 'fs'
-import { globby } from 'globby'
+import path from 'path';
+import fs from 'fs';
+import { globby } from 'globby';
 
-function pathPrefix (i) {
-  const res = '  '.repeat(i)
-  return res + '*'
+function pathPrefix(level) {
+  return '  '.repeat(level) + '*';
 }
 
-function printPath (oldPath, newPath, output) {
-  const oldParts = oldPath.split(path.sep)
-  const newParts = newPath.split(path.sep)
+function printPath(oldPath, newPath, output) {
+  const oldParts = oldPath.split(path.sep);
+  const newParts = newPath.split(path.sep);
 
-  for (let i = 0; i < newParts.length; ++i) {
-    const newPart = newParts[i]
-    if (i + 1 > oldParts.length || oldParts[i] !== newPart) {
+  for (let i = 0; i < newParts.length; i++) {
+    const newPart = newParts[i];
+    if (i >= oldParts.length || oldParts[i] !== newPart) {
       if (newPart) {
-        output.push(`${pathPrefix(i)} **${newPart.replace('_', ' ')}**`)
+        output.push(`${pathPrefix(i)} **${newPart.replace('_', ' ')}**`);
       }
     }
   }
 
-  return newPath
+  return newPath;
 }
 
-function pathsToMarkdown (filePaths) {
-  const output = []
+function pathsToMarkdown(filePaths) {
+  const output = [];
+  let oldPath = '';
 
-  let oldPath = ''
-  filePaths.sort(function (a, b) {
-    if (a.toLowerCase() < b.toLowerCase()) return -1
-    if (a.toLowerCase() > b.toLowerCase()) return 1
-    return 0
-  })
+  filePaths.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
   for (let filepath of filePaths) {
-    let filename = path.basename(filepath)
-    filepath = path.dirname(filepath)
+    const filename = path.basename(filepath);
+    const directory = path.dirname(filepath);
 
-    if (filepath !== oldPath) {
-      oldPath = printPath(oldPath, filepath, output)
+    if (directory !== oldPath) {
+      oldPath = printPath(oldPath, directory, output);
     }
 
-    let indent = filepath.split(path.sep).length
+    const indent = directory.split(path.sep).length;
+    const prefix = pathPrefix(indent);
 
-    // prepare the markdown-esque prefix to the file's line
-    const prefix = pathPrefix(indent)
+    // Remove the file extension and construct the URL-friendly path
+    const name = path.basename(filename, path.extname(filename));
+    const url = filepath.replace(/\\/g, '/'); // Ensure URLs use forward slashes
 
-    // remove extension from filename
-    const name = path.basename(filename, ".js")
-    const url = path.join(filepath, filename)
-
-    output.push(`${prefix} [${name}](${url})`)
+    output.push(`${prefix} [${name}](${url})`);
   }
 
-  return output.join('\n')
+  return output.join('\n');
 }
 
-// get paths of all .js files - excluding node_modules, the .github folder, tests and config stuff
-globby([
-  '**/*.js',
-  '!(node_modules|.github)/**/*',
-  "!**/test/**/*",
-  '!**/*.test.js',
-  '!**/*.manual-test.js',
-  '!vitest.config.ts'
-])
-  // create markdown content
-  .then(pathsToMarkdown)
-  // write markdown to file
-  .then(markdown => fs.writeFileSync('DIRECTORY.md', markdown + '\n', { encoding: 'utf8' }))
+// Get paths of all .js files while excluding irrelevant files and directories
+(async () => {
+  try {
+    const filePaths = await globby([
+      '**/*.js',
+      '!node_modules/**',
+      '!.github/**',
+      '!**/test/**',
+      '!**/*.test.js',
+      '!**/*.manual-test.js',
+      '!vitest.config.ts',
+    ]);
+
+    const markdown = pathsToMarkdown(filePaths);
+
+    const outputPath = 'DIRECTORY.md';
+
+    // Compare existing content to avoid unnecessary updates
+    if (fs.existsSync(outputPath)) {
+      const existingContent = fs.readFileSync(outputPath, 'utf8');
+      if (existingContent.trim() === markdown.trim()) {
+        console.log('No changes detected. Skipping write operation.');
+        return;
+      }
+    }
+
+    // Write updated markdown content
+    fs.writeFileSync(outputPath, markdown + '\n', { encoding: 'utf8' });
+    console.log('DIRECTORY.md updated successfully.');
+  } catch (error) {
+    console.error('Error updating DIRECTORY.md:', error);
+  }
+})();
+
+  
+
+    
+  
